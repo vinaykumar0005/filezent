@@ -4,7 +4,7 @@ import {
   sendRegisterOtp,
   verifyRegisterOtp,
 } from "../controllers/auth.controller.js";
-import { otpLimiter } from "../middlewares/ratelimit.js";
+import { otpLimiter } from "../middlewares/rateLimit.js";
 
 
 
