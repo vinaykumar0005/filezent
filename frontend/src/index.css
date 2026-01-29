@@ -1,0 +1,465 @@
+/* =====================================
+   TAILWIND BASE
+===================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* =====================================
+   GOOGLE FONT
+===================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+
+/* =====================================
+   RESET
+===================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+/* =====================================
+   GLOBAL BODY
+===================================== */
+
+body {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Modern soft gradient */
+  background: linear-gradient(
+    135deg,
+    #eff6ff,
+    #f5f3ff,
+    #fdf2f8
+  );
+
+  color: #1f2933;
+  min-height: 100vh;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* =====================================
+   CONTAINER
+===================================== */
+
+.container-app {
+  @apply max-w-6xl mx-auto px-4;
+}
+
+
+/* =====================================
+   GLASS CARD (BACKWARD COMPATIBLE)
+===================================== */
+
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =====================================
+   CARD (NEW)
+===================================== */
+
+.card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border-radius: 1.5rem;
+  padding: 2rem;
+
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+
+/* =====================================
+   INPUTS (BACKWARD COMPATIBLE)
+===================================== */
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+
+  font-size: 1rem;
+  background: #ffffff;
+
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.input:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+
+/* =====================================
+   BUTTONS (BACKWARD COMPATIBLE)
+===================================== */
+
+.btn {
+  padding: 0.75rem 1.5rem;
+
+  background: linear-gradient(
+    to right,
+    #2563eb,
+    #9333ea
+  );
+
+  color: #ffffff;
+  border: none;
+  border-radius: 0.75rem;
+
+  font-size: 1rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  outline: none;
+
+  transition: all 0.3s ease;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+}
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.03);
+
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =====================================
+   SECONDARY BUTTON
+===================================== */
+
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+
+  background: #ffffff;
+  color: #2563eb;
+
+  border: 2px solid #2563eb;
+  border-radius: 0.75rem;
+
+  font-weight: 600;
+
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #2563eb;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+
+/* =====================================
+   GRADIENT TEXT
+===================================== */
+
+.gradient-text {
+  background: linear-gradient(
+    to right,
+    #2563eb,
+    #9333ea
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+
+/* =====================================
+   BADGES
+===================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.25rem 0.75rem;
+
+  border-radius: 9999px;
+
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.badge-error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+
+/* =====================================
+   ANIMATIONS
+===================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+
+/* =====================================
+   SCROLLBAR
+===================================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    #2563eb,
+    #9333ea
+  );
+
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    #1d4ed8,
+    #7e22ce
+  );
+}
+
+
+/* =====================================
+   ACCESSIBILITY
+===================================== */
+
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+
+/* =====================================
+   SPINNER
+===================================== */
+
+.spinner {
+  width: 40px;
+  height: 40px;
+
+  border: 4px solid rgba(59, 130, 246, 0.1);
+  border-top-color: #3b82f6;
+
+  border-radius: 50%;
+
+  animation: spin 1s linear infinite;
+}
+
+
+/* =====================================
+   TRANSITIONS
+===================================== */
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-colors {
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+
+/* =====================================
+   HOVER EFFECTS
+===================================== */
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+
+/* =====================================
+   MOBILE OPTIMIZATION
+===================================== */
+
+@media (max-width: 640px) {
+
+  .card {
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1.2rem;
+  }
+
+  .input {
+    padding: 0.6rem 0.9rem;
+  }
+
+}
+
+/* old code */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================
+   GLOBAL
+======================== 
+
+body {
+  @apply bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white min-h-screen;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Glass card 
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Inputs 
+.input {
+  @apply w-full px-4 py-2 rounded-lg bg-black/40 border border-gray-600 text-white focus:outline-none focus:border-white;
+}
+
+/* Buttons 
+.btn {
+  @apply bg-white text-black font-semibold py-2 rounded-lg hover:bg-gray-200 transition;
+}
+
+/* Page container 
+.container-app {
+  @apply max-w-6xl mx-auto px-4;
+} */
