@@ -3,7 +3,7 @@ import "dotenv/config";
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import { startOtpCleanup } from "./utils/otpCleanup.js";
-import { startFileCleanup } from "./utils/fileCleanup.js";
+import { cleanup } from "./utils/fileCleanup.js";
 import { startTempCleanup } from "./utils/tempCleanup.js";
 import { startRegisterOtpCleanup } from "./utils/registerotpCleanup.js";
 
@@ -14,10 +14,10 @@ import { startRegisterOtpCleanup } from "./utils/registerotpCleanup.js";
 
 connectDB();
 startOtpCleanup();
-startFileCleanup();
+cleanup();
 startTempCleanup();
 startRegisterOtpCleanup();
-cron.schedule("0 0 * * *", startFileCleanup);
+cron.schedule("0 0 * * *", cleanup);
 
 
 
