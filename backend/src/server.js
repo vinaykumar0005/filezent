@@ -1,4 +1,5 @@
 import "dotenv/config";
+import cron from "node-cron"; 
 
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
@@ -17,11 +18,16 @@ startOtpCleanup();
 cleanup();
 startTempCleanup();
 startRegisterOtpCleanup();
-cron.schedule("0 0 * * *", cleanup);
+cron.schedule("0 0 * * *", async () => {
+  console.log("Running daily cleanup...");
+  await cleanup();
+});
 
 
 
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
