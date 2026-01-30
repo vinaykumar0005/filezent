@@ -1,5 +1,6 @@
 import "dotenv/config";
 import cron from "node-cron"; 
+import cors from "cors";
 
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
@@ -11,6 +12,16 @@ import { startRegisterOtpCleanup } from "./utils/registerotpCleanup.js";
 
 
 
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://filezent.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 
 connectDB();
