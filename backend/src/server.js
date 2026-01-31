@@ -10,12 +10,13 @@ import { cleanup } from "./utils/fileCleanup.js";
 import { startTempCleanup } from "./utils/tempCleanup.js";
 import { startRegisterOtpCleanup } from "./utils/registerotpCleanup.js";
 
-/* ============================
+/* ========================
    CORS CONFIG
-============================ */
+======================== */
 
 const allowedOrigins = [
   "https://filezent.vercel.app",
+  "https://www.filezent.vercel.app",
   "http://localhost:3000",
   "http://localhost:5173",
 ];
@@ -23,60 +24,61 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow Postman / Server requests
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+
+      console.log("❌ Blocked CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
+
     credentials: true,
+
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
+
+    exposedHeaders: ["Authorization"],
   })
 );
 
-// Preflight
-// app.options("/*", cors());
-
-
-/* ============================
-   DATABASE
-============================ */
+/* ========================
+   INIT SERVICES
+======================== */
 
 connectDB();
-
-/* ============================
-   CLEANUPS
-============================ */
 
 startOtpCleanup();
 startTempCleanup();
 startRegisterOtpCleanup();
 cleanup();
 
-// Daily cleanup
+/* ========================
+   CRON JOB
+======================== */
+
 cron.schedule("0 0 * * *", async () => {
-  console.log("Running daily cleanup...");
+  console.log("🧹 Running daily cleanup...");
   await cleanup();
 });
 
-/* ============================
-   ROUTES
-============================ */
-
-app.get("/", (req, res) => {
-  res.send("Filezent API is running");
-});
-
-/* ============================
+/* ========================
    SERVER
-============================ */
+======================== */
 
 const PORT = process.env.PORT || 5000;
 
+app.get("/", (req, res) => {
+  res.send("✅ Filezent API is running");
+});
+
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log("🚀 Server running on port", PORT);
 });
