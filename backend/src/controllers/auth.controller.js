@@ -31,7 +31,11 @@ export const register = async (req, res) => {
 //Register otp
 export const sendRegisterOtp = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ message: "Email required" });
+    }
 
     const existing = await User.findOne({ email });
 
@@ -43,11 +47,13 @@ export const sendRegisterOtp = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Delete old OTPs
     await RegisterOtp.deleteMany({ email });
 
     await RegisterOtp.create({
       email,
       otp,
+      attempts: 0,
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
 
@@ -59,18 +65,19 @@ export const sendRegisterOtp = async (req, res) => {
       subject: "Verify Your Filezent Account",
       html: `
         <h2>Email Verification</h2>
-        <p>Your OTP is:</p>
         <h1>${otp}</h1>
         <p>Valid for 10 minutes</p>
       `,
     });
 
     res.json({ success: true });
+
   } catch (err) {
-    console.error("Register OTP Error:", err.message);
+    console.error("Register OTP Error:", err);
     res.status(500).json({ message: "OTP send failed" });
   }
 };
+
 
 
 //Verify registered Otp
@@ -186,39 +193,55 @@ export const login = async (req, res) => {
 ========================= */
 
 export const forgotPassword = async (req, res) => {
-  console.log("🔥 FORGOT PASSWORD API HIT");//temp
-  console.log("📧 Email received:", req.body.email);//temp
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();//temp
+  try {
+    const email = req.body.email?.trim().toLowerCase();
 
-  const record = await Otp.create({//temp
-    email: req.body.email,//temp
-    otp,//temp
-    expiresAt: new Date(Date.now() + 10 * 60 * 1000),//temp
-  });//temp
+    if (!email) {
+      return res.status(400).json({ message: "Email required" });
+    }
 
-  console.log("✅ OTP CREATED:", record.otp);//temp
-  console.log("DB OTP:", record.otp);
-  console.log("User OTP:", otp);
+    // Check user exists
+    const user = await User.findOne({ email });
 
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-  // const otp = Math.floor(100000 + Math.random() * 900000).toString(); original
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  await Otp.create({
-    email: req.body.email,
-    otp,
-    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-  });
+    // Delete old OTPs
+    await Otp.deleteMany({ email });
 
-  const transporter = await createTransporter();
+    await Otp.create({
+      email,
+      otp,
+      attempts: 0,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
 
-  await transporter.sendMail({
-    from: '"Filezent" <no-reply@filezent.com>',
-    to: req.body.email,
-    subject: "Filezent Password Reset OTP",
-    html: `<h2>Your OTP: ${otp}</h2>`,
-  });
+    const transporter = await createTransporter();
 
-  res.json({ success: true });
+    await transporter.sendMail({
+      from: '"Filezent" <no-reply@filezent.com>',
+      to: email,
+      subject: "Filezent Password Reset OTP",
+      html: `
+        <h2>Password Reset</h2>
+        <h1>${otp}</h1>
+        <p>Valid for 10 minutes</p>
+      `,
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Forgot Password Error:", err);
+    res.status(500).json({
+      message: "Unable to send OTP",
+    });
+  }
 };
 
 
@@ -244,7 +267,7 @@ export const resetPassword = async (req, res) => {
 
     if (!record) {
       return res.status(400).json({
-        message: "OTP expired or not found. Request again.",
+        message: "OTP expired or not found",
       });
     }
 
@@ -255,11 +278,9 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    const dbOtp = record.otp.trim();
-    const userOtp = String(otp).trim();
+    // Compare OTP
+    if (String(record.otp).trim() !== String(otp).trim()) {
 
-    // Compare
-    if (dbOtp !== userOtp) {
       record.attempts++;
 
       if (record.attempts >= 5) {
@@ -275,7 +296,7 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Success
+    // Reset password
     const hashed = await bcrypt.hash(newPassword, 10);
 
     await User.updateOne(
@@ -283,12 +304,13 @@ export const resetPassword = async (req, res) => {
       { password: hashed }
     );
 
-    // Delete all OTPs
+    // Remove OTPs
     await Otp.deleteMany({ email: cleanEmail });
 
     res.json({ success: true });
+
   } catch (err) {
-    console.error("Reset Password Error:", err.message);
+    console.error("Reset Password Error:", err);
 
     res.status(500).json({
       message: "Password reset failed",
