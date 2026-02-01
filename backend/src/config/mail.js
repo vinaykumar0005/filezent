@@ -2,44 +2,50 @@ import nodemailer from "nodemailer";
 
 export const createTransporter = async () => {
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "smtp-relay.brevo.com",
     port: 587,
-    secure: false, // TLS
+    secure: false,
     auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAIL_APP_PASSWORD,
+      user: process.env.BREVO_USER,
+      pass: process.env.BREVO_PASS,
     },
-    tls: {
-      rejectUnauthorized: false,
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
   });
 
-  // Verify connection
   await transporter.verify();
+
+  console.log("✅ SMTP Connected (Brevo)");
 
   return transporter;
 };
 
+//gmail smtp
 // import nodemailer from "nodemailer";
 
 // export const createTransporter = async () => {
-//   return nodemailer.createTransport({
-//     service: "gmail",
+//   const transporter = nodemailer.createTransport({
 //     host: "smtp.gmail.com",
-//     port: 465,
-//     secure: true,
-
+//     port: 587,
+//     secure: false, // TLS
 //     auth: {
 //       user: process.env.EMAIL,
 //       pass: process.env.EMAIL_APP_PASSWORD,
 //     },
-//     connectionTimeout: 20000,
-//     socketTimeout: 20000,
+//     tls: {
+//       rejectUnauthorized: false,
+//     },
+//     connectionTimeout: 10000,
+//     greetingTimeout: 10000,
+//     socketTimeout: 10000,
 //   });
+
+//   // Verify connection
+//   await transporter.verify();
+
+//   return transporter;
 // };
+
+
+
 
 
 // import nodemailer from "nodemailer";
