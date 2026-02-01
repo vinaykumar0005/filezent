@@ -1,19 +1,26 @@
 import nodemailer from "nodemailer";
 
 export const createTransporter = async () => {
-  return nodemailer.createTransport({
-    service: "gmail",
+  const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-
+    port: 587,
+    secure: false, // TLS
     auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAIL_APP_PASSWORD,
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
-    connectionTimeout: 20000,
-    socketTimeout: 20000,
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
+
+  // Verify connection
+  await transporter.verify();
+
+  return transporter;
 };
 
 
