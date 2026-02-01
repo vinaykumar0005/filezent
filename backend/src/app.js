@@ -43,7 +43,7 @@ app.use(
 
 
 // Handle Preflight
-app.options("*", cors());
+// app.options(cors());
 
 
 // Body parser
