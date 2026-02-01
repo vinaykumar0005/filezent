@@ -60,7 +60,7 @@ export const sendRegisterOtp = async (req, res) => {
     const transporter = await createTransporter();
 
     await transporter.sendMail({
-      from: '"Filezent" <vinaydev0005@gmail.com>',//temp change to my mail
+      from: `"Filezent" <${process.env.BREVO_USER}>`,//temp change to my mail
       to: email,
       subject: "Verify Your Filezent Account",
       html: `
@@ -191,58 +191,101 @@ export const login = async (req, res) => {
 /* =========================
    FORGOT PASSWORD (⬅ YOUR CODE GOES HERE)
 ========================= */
-
 export const forgotPassword = async (req, res) => {
   try {
-    const email = req.body.email?.trim().toLowerCase();
+    const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email required" });
     }
 
-    // Check user exists
-    const user = await User.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
+    // Remove old OTP
+    await Otp.deleteMany({ email: cleanEmail });
 
+    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Delete old OTPs
-    await Otp.deleteMany({ email });
-
+    // Save OTP
     await Otp.create({
-      email,
+      email: cleanEmail,
       otp,
-      attempts: 0,
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
 
+    // Mail
     const transporter = await createTransporter();
 
     await transporter.sendMail({
-      from: '"Filezent" <vinaydev0005@gmail.com>', //temp change to my mail
-      to: email,
+      from: `"Filezent" <${process.env.BREVO_USER}>`,
+      to: cleanEmail,
       subject: "Filezent Password Reset OTP",
-      html: `
-        <h2>Password Reset</h2>
-        <h1>${otp}</h1>
-        <p>Valid for 10 minutes</p>
-      `,
+      html: `<h2>Your OTP: ${otp}</h2>`,
     });
 
     res.json({ success: true });
 
   } catch (err) {
     console.error("Forgot Password Error:", err);
+
     res.status(500).json({
-      message: "Unable to send OTP",
+      message: "OTP send failed",
     });
   }
 };
+
+// export const forgotPassword = async (req, res) => {
+//   try {
+//     const email = req.body.email?.trim().toLowerCase();
+
+//     if (!email) {
+//       return res.status(400).json({ message: "Email required" });
+//     }
+
+//     // Check user exists
+//     const user = await User.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//       });
+//     }
+
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     // Delete old OTPs
+//     await Otp.deleteMany({ email });
+
+//     await Otp.create({
+//       email,
+//       otp,
+//       attempts: 0,
+//       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+//     });
+
+//     const transporter = await createTransporter();
+
+//     await transporter.sendMail({
+//       from: '"Filezent" <vinaydev0005@gmail.com>', //temp change to my mail
+//       to: email,
+//       subject: "Filezent Password Reset OTP",
+//       html: `
+//         <h2>Password Reset</h2>
+//         <h1>${otp}</h1>
+//         <p>Valid for 10 minutes</p>
+//       `,
+//     });
+
+//     res.json({ success: true });
+
+//   } catch (err) {
+//     console.error("Forgot Password Error:", err);
+//     res.status(500).json({
+//       message: "Unable to send OTP",
+//     });
+//   }
+// };
 
 
 /* =========================
