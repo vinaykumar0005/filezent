@@ -18,7 +18,6 @@ connectDB();
 startOtpCleanup();
 startTempCleanup();
 startRegisterOtpCleanup();
-cleanup();
 
 /* ======================
    CRON
