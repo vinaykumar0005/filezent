@@ -60,7 +60,7 @@ export const sendRegisterOtp = async (req, res) => {
     const transporter = await createTransporter();
 
     await transporter.sendMail({
-      from: '"Filezent" <no-reply@filezent.com>',
+      from: '"Filezent" <vinaydev0005@gmail.com>',//temp change to my mail
       to: email,
       subject: "Verify Your Filezent Account",
       html: `
@@ -224,7 +224,7 @@ export const forgotPassword = async (req, res) => {
     const transporter = await createTransporter();
 
     await transporter.sendMail({
-      from: '"Filezent" <no-reply@filezent.com>',
+      from: '"Filezent" <vinaydev0005@gmail.com>', //temp change to my mail
       to: email,
       subject: "Filezent Password Reset OTP",
       html: `
