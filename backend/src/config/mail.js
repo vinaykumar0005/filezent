@@ -1,21 +1,43 @@
-import nodemailer from "nodemailer";
+import SibApiV3Sdk from "sib-api-v3-sdk";
 
-export const createTransporter = async () => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_PASS,
-    },
-  });
+export const sendMail = async ({ to, subject, html }) => {
+  try {
+    const client = SibApiV3Sdk.ApiClient.instance;
 
-  await transporter.verify();
+    const apiKey = client.authentications["api-key"];
+    apiKey.apiKey = process.env.BREVO_API_KEY;
 
-  console.log("✅ SMTP Connected (Brevo)");
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error("BREVO_API_KEY missing");
+    }
 
-  return transporter;
+    if (!process.env.BREVO_SENDER) {
+      throw new Error("BREVO_SENDER missing");
+    }
+
+    const api = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    const result = await api.sendTransacEmail({
+      sender: {
+        email: process.env.BREVO_SENDER,
+        name: "Filezent",
+      },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    });
+
+    console.log("✅ Email sent to:", to);
+
+    return result;
+
+  } catch (err) {
+    console.error(
+      "❌ Brevo Mail Error:",
+      err.response?.body || err.message
+    );
+    throw err;
+  }
 };
 
 //gmail smtp

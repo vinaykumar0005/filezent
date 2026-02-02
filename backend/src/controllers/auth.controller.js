@@ -1,34 +1,54 @@
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
+import RegisterOtp from "../models/RegisterOtp.js";
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { createTransporter } from "../config/mail.js";
-import RegisterOtp from "../models/RegisterOtp.js";
-import { OTP_MAX_ATTEMPTS, OTP_LOCK_TIME } from "../config/security.js";
 
+import { sendMail } from "../config/mail.js";
 
+import {
+  OTP_MAX_ATTEMPTS,
+  OTP_LOCK_TIME,
+} from "../config/security.js";
 
 
 /* =========================
    REGISTER
 ========================= */
 export const register = async (req, res) => {
-  const exists = await User.findOne({ email: req.body.email });
-  if (exists) {
-    return res.status(409).json({ message: "USER_EXISTS" });
+  try {
+    const { name, email, password } = req.body;
+
+    const cleanEmail = email?.trim().toLowerCase();
+
+    const exists = await User.findOne({ email: cleanEmail });
+
+    if (exists) {
+      return res.status(409).json({ message: "USER_EXISTS" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    await User.create({
+      name,
+      email: cleanEmail,
+      password: hashed,
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Register Error:", err);
+    res.status(500).json({ message: "Register failed" });
   }
-
-  const hashed = await bcrypt.hash(req.body.password, 10);
-  await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: hashed,
-  });
-
-  res.json({ success: true });
 };
 
-//Register otp
+
+
+/* =========================
+   SEND REGISTER OTP
+========================= */
 export const sendRegisterOtp = async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
@@ -41,13 +61,12 @@ export const sendRegisterOtp = async (req, res) => {
 
     if (existing) {
       return res.status(400).json({
-        message: "User already registered. Please login.",
+        message: "User already registered",
       });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Delete old OTPs
     await RegisterOtp.deleteMany({ email });
 
     await RegisterOtp.create({
@@ -57,10 +76,7 @@ export const sendRegisterOtp = async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
 
-    const transporter = await createTransporter();
-
-    await transporter.sendMail({
-      from: `"Filezent" <${process.env.BREVO_USER}>`,//temp change to my mail
+    await sendMail({
       to: email,
       subject: "Verify Your Filezent Account",
       html: `
@@ -80,45 +96,38 @@ export const sendRegisterOtp = async (req, res) => {
 
 
 
-//Verify registered Otp
+/* =========================
+   VERIFY REGISTER OTP
+========================= */
 export const verifyRegisterOtp = async (req, res) => {
   try {
     const { email, otp, name, password } = req.body;
 
-    const record = await RegisterOtp.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+
+    const record = await RegisterOtp.findOne({ email: cleanEmail });
 
     if (!record) {
-      return res.status(400).json({
-        message: "OTP not found. Request again.",
-      });
+      return res.status(400).json({ message: "OTP not found" });
     }
 
-    // Check lock
-    if (record.lockedUntil && record.lockedUntil > Date.now()) {
-      const mins = Math.ceil(
-        (record.lockedUntil - Date.now()) / 60000
-      );
-
+    if (record.lockedUntil > Date.now()) {
       return res.status(429).json({
-        message: `Too many attempts. Try again in ${mins} minutes.`,
+        message: "Too many attempts. Try later.",
       });
     }
 
-    // Check expiry
     if (record.expiresAt < Date.now()) {
-      await RegisterOtp.deleteOne({ email });
+      await RegisterOtp.deleteOne({ email: cleanEmail });
 
       return res.status(400).json({
-        message: "OTP expired. Request new one.",
+        message: "OTP expired",
       });
     }
 
-    // Wrong OTP
-    if (String(record.otp) !== String(otp)) {
+    if (record.otp !== otp) {
+      record.attempts++;
 
-      record.attempts += 1;
-
-      // Lock account
       if (record.attempts >= OTP_MAX_ATTEMPTS) {
         record.lockedUntil = new Date(
           Date.now() + OTP_LOCK_TIME
@@ -127,35 +136,27 @@ export const verifyRegisterOtp = async (req, res) => {
 
       await record.save();
 
-      return res.status(400).json({
-        message: "Invalid OTP",
-      });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // ✅ SUCCESS — RESET COUNTERS
-    await RegisterOtp.deleteOne({ email });
+    await RegisterOtp.deleteOne({ email: cleanEmail });
 
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
-      email,
+      email: cleanEmail,
       password: hashed,
     });
 
     res.json({
       success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      user,
     });
+
   } catch (err) {
-    console.error("Verify OTP Error:", err.message);
-    res.status(500).json({
-      message: "Verification failed",
-    });
+    console.error("Verify OTP Error:", err);
+    res.status(500).json({ message: "Verification failed" });
   }
 };
 
@@ -165,61 +166,63 @@ export const verifyRegisterOtp = async (req, res) => {
    LOGIN
 ========================= */
 export const login = async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) {
-    return res.status(400).json({ message: "INVALID_CREDENTIALS" });
+  try {
+    const { email, password } = req.body;
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({ email: cleanEmail });
+
+    if (!user) {
+      return res.status(400).json({ message: "INVALID_CREDENTIALS" });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ message: "INVALID_CREDENTIALS" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token, user });
+
+  } catch (err) {
+    console.error("Login Error:", err);
+    res.status(500).json({ message: "Login failed" });
   }
-
-  const match = await bcrypt.compare(req.body.password, user.password);
-  if (!match) {
-    return res.status(400).json({ message: "INVALID_CREDENTIALS" });
-  }
-
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "1d",
-  });
-
-  res.json({
-    token,
-    user: {
-      name: user.name,
-      email: user.email,
-    },
-  });
 };
 
+
+
 /* =========================
-   FORGOT PASSWORD (⬅ YOUR CODE GOES HERE)
+   FORGOT PASSWORD
 ========================= */
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
 
     if (!email) {
       return res.status(400).json({ message: "Email required" });
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    await Otp.deleteMany({ email });
 
-    // Remove old OTP
-    await Otp.deleteMany({ email: cleanEmail });
-
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save OTP
     await Otp.create({
-      email: cleanEmail,
+      email,
       otp,
+      attempts: 0,
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     });
 
-    // Mail
-    const transporter = await createTransporter();
-
-    await transporter.sendMail({
-      from: `"Filezent" <${process.env.BREVO_USER}>`,
-      to: cleanEmail,
+    await sendMail({
+      to: email,
       subject: "Filezent Password Reset OTP",
       html: `<h2>Your OTP: ${otp}</h2>`,
     });
@@ -228,64 +231,10 @@ export const forgotPassword = async (req, res) => {
 
   } catch (err) {
     console.error("Forgot Password Error:", err);
-
-    res.status(500).json({
-      message: "OTP send failed",
-    });
+    res.status(500).json({ message: "OTP send failed" });
   }
 };
 
-// export const forgotPassword = async (req, res) => {
-//   try {
-//     const email = req.body.email?.trim().toLowerCase();
-
-//     if (!email) {
-//       return res.status(400).json({ message: "Email required" });
-//     }
-
-//     // Check user exists
-//     const user = await User.findOne({ email });
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User not found",
-//       });
-//     }
-
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-//     // Delete old OTPs
-//     await Otp.deleteMany({ email });
-
-//     await Otp.create({
-//       email,
-//       otp,
-//       attempts: 0,
-//       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-//     });
-
-//     const transporter = await createTransporter();
-
-//     await transporter.sendMail({
-//       from: '"Filezent" <vinaydev0005@gmail.com>', //temp change to my mail
-//       to: email,
-//       subject: "Filezent Password Reset OTP",
-//       html: `
-//         <h2>Password Reset</h2>
-//         <h1>${otp}</h1>
-//         <p>Valid for 10 minutes</p>
-//       `,
-//     });
-
-//     res.json({ success: true });
-
-//   } catch (err) {
-//     console.error("Forgot Password Error:", err);
-//     res.status(500).json({
-//       message: "Unable to send OTP",
-//     });
-//   }
-// };
 
 
 /* =========================
@@ -295,12 +244,6 @@ export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
-    if (!email || !otp || !newPassword) {
-      return res.status(400).json({
-        message: "All fields are required",
-      });
-    }
-
     const cleanEmail = email.trim().toLowerCase();
 
     const record = await Otp.findOne({
@@ -309,21 +252,14 @@ export const resetPassword = async (req, res) => {
     });
 
     if (!record) {
-      return res.status(400).json({
-        message: "OTP expired or not found",
-      });
+      return res.status(400).json({ message: "OTP expired" });
     }
 
-    // Lock check
-    if (record.lockedUntil && record.lockedUntil > Date.now()) {
-      return res.status(429).json({
-        message: "Too many attempts. Try later.",
-      });
+    if (record.lockedUntil > Date.now()) {
+      return res.status(429).json({ message: "Try later" });
     }
 
-    // Compare OTP
-    if (String(record.otp).trim() !== String(otp).trim()) {
-
+    if (record.otp !== otp) {
       record.attempts++;
 
       if (record.attempts >= 5) {
@@ -334,12 +270,9 @@ export const resetPassword = async (req, res) => {
 
       await record.save();
 
-      return res.status(400).json({
-        message: "Invalid OTP",
-      });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Reset password
     const hashed = await bcrypt.hash(newPassword, 10);
 
     await User.updateOne(
@@ -347,16 +280,12 @@ export const resetPassword = async (req, res) => {
       { password: hashed }
     );
 
-    // Remove OTPs
     await Otp.deleteMany({ email: cleanEmail });
 
     res.json({ success: true });
 
   } catch (err) {
-    console.error("Reset Password Error:", err);
-
-    res.status(500).json({
-      message: "Password reset failed",
-    });
+    console.error("Reset Error:", err);
+    res.status(500).json({ message: "Reset failed" });
   }
 };
