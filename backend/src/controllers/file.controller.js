@@ -40,6 +40,7 @@ ensureDir(FILES_DIR);
 
 export const uploadChunk = async (req, res) => {
   try {
+
     const {
       uploadId,
       chunkIndex,
@@ -47,74 +48,103 @@ export const uploadChunk = async (req, res) => {
       fileName,
     } = req.body;
 
+    /* =========================
+       VALIDATION
+    ========================= */
+
     if (!req.file) {
+      console.error("❌ Multer did not receive file");
+
       return res.status(400).json({
-        message: "No chunk received",
+        message: "File chunk missing",
       });
     }
 
-    if (!uploadId || !fileName) {
+    if (
+      !uploadId ||
+      chunkIndex === undefined ||
+      !totalChunks ||
+      !fileName
+    ) {
       return res.status(400).json({
         message: "Invalid upload data",
       });
     }
 
+    /* =========================
+       LAST CHUNK → MERGE
+    ========================= */
+
     const isLast =
       Number(chunkIndex) + 1 === Number(totalChunks);
 
-    if (isLast) {
-      const finalDir = path.join(
-        process.cwd(),
-        "src/uploads/files"
-      );
+    if (!isLast) {
+      return res.json({ chunkReceived: true });
+    }
 
-      if (!fs.existsSync(finalDir)) {
-        fs.mkdirSync(finalDir, { recursive: true });
-      }
+    /* =========================
+       MERGE
+    ========================= */
 
-      const finalPath = await mergeChunks(
-        uploadId,
-        Number(totalChunks),
-        finalDir,
-        fileName
-      );
+    const finalDir = path.join(
+      process.cwd(),
+      "src/uploads/files"
+    );
 
-      // Cleanup
-      const chunkDir = path.join(
-        process.cwd(),
-        "src/uploads/chunks",
-        uploadId
-      );
+    if (!fs.existsSync(finalDir)) {
+      fs.mkdirSync(finalDir, { recursive: true });
+    }
 
-      if (fs.existsSync(chunkDir)) {
-        fs.rmSync(chunkDir, {
-          recursive: true,
-          force: true,
-        });
-      }
+    const finalPath = await mergeChunks(
+      uploadId,
+      Number(totalChunks),
+      finalDir,
+      fileName
+    );
 
-      const file = await File.create({
-        originalName: fileName,
-        path: finalPath,
-        size: fs.statSync(finalPath).size,
-        token: uuid(),
-        expiresAt: new Date(
-          Date.now() + 24 * 60 * 60 * 1000
-        ),
-      });
+    /* =========================
+       CLEANUP
+    ========================= */
 
-      return res.json({
-        success: true,
-        downloadLink: `${process.env.SERVER_URL}/api/files/download/${file.token}`,
+    const chunkDir = path.join(
+      process.cwd(),
+      "src/uploads/chunks",
+      uploadId
+    );
+
+    if (fs.existsSync(chunkDir)) {
+      fs.rmSync(chunkDir, {
+        recursive: true,
+        force: true,
       });
     }
 
-    res.json({ chunkReceived: true });
+    /* =========================
+       SAVE DB
+    ========================= */
+
+    const file = await File.create({
+      originalName: fileName,
+      path: finalPath,
+      size: fs.statSync(finalPath).size,
+      token: uuid(),
+      expiresAt: new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ),
+    });
+
+    return res.json({
+      success: true,
+
+      downloadLink:
+        `${process.env.SERVER_URL}/api/files/download/${file.token}`,
+    });
 
   } catch (err) {
-    console.error("Upload Error:", err);
 
-    res.status(500).json({
+    console.error("❌ Upload Error:", err);
+
+    return res.status(500).json({
       message: "Upload failed",
     });
   }

@@ -55,10 +55,10 @@ export default function Upload() {
             form.append("fileName", file.name);
 
             const res = await api.post(
-              "/files/upload",
+              `/files/upload?uploadId=${uploadId}&chunkIndex=${i}`,
               form,
               {
-                timeout: 0, // 🔥 IMPORTANT (disable timeout)
+                timeout: 0,
 
                 onUploadProgress: (e) => {
                   if (e.total) {

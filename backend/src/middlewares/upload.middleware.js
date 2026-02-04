@@ -3,12 +3,17 @@ import fs from "fs";
 import path from "path";
 
 /* ============================
-   MULTER STORAGE (SAFE)
+   SAFE STORAGE
 ============================ */
 
 const storage = multer.diskStorage({
+
   destination: (req, file, cb) => {
-    const { uploadId } = req.body;
+
+    // Multer may not parse body yet → fallback to query
+    const uploadId =
+      req.body?.uploadId ||
+      req.query?.uploadId;
 
     if (!uploadId) {
       return cb(new Error("uploadId missing"));
@@ -28,7 +33,10 @@ const storage = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const { chunkIndex } = req.body;
+
+    const chunkIndex =
+      req.body?.chunkIndex ??
+      req.query?.chunkIndex;
 
     if (chunkIndex === undefined) {
       return cb(new Error("chunkIndex missing"));
@@ -39,11 +47,12 @@ const storage = multer.diskStorage({
 });
 
 /* ============================
-   LIMITS + FILTER
+   EXPORT
 ============================ */
 
 export const upload = multer({
   storage,
+
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB per chunk
   },
