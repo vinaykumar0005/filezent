@@ -139,6 +139,8 @@ export const uploadChunk = async (req, res) => {
       downloadLink:
         `${process.env.SERVER_URL}/api/files/download/${file.token}`,
     });
+    console.log("File:", req.file?.originalname);
+    console.log("Body:", req.body);// add for console only
 
   } catch (err) {
 
