@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as tus from "tus-js-client";
 import { supabase } from "../config/supabase";
 import axios from "../api/axios";
 
 /*
-  FileUpload Component
-  - Supports 5GB+ files
-  - Resumable upload
-  - Progress bar
-  - Supabase storage
+  Production FileUpload
+  - 5GB+ support
+  - Resumable
+  - Crash-safe
+  - Resume after refresh
+  - Network recovery
 */
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10GB
+const CHUNK_SIZE = 6 * 1024 * 1024; // 6MB
 
 export default function FileUpload({ onSuccess }) {
   const [progress, setProgress] = useState(0);
@@ -17,12 +21,47 @@ export default function FileUpload({ onSuccess }) {
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
 
+  const uploadRef = useRef(null);
+
+  /* ===========================
+     ENV VALIDATION
+  =========================== */
+  useEffect(() => {
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      console.error("❌ Missing SUPABASE URL");
+    }
+
+    if (!import.meta.env.VITE_SUPABASE_KEY) {
+      console.error("❌ Missing SUPABASE KEY");
+    }
+  }, []);
+
+  /* ===========================
+     CLEAN OLD UPLOADS
+  =========================== */
+  useEffect(() => {
+    return () => {
+      if (uploadRef.current) {
+        uploadRef.current.abort();
+      }
+    };
+  }, []);
+
+  /* ===========================
+     FILE UPLOAD
+  =========================== */
   const uploadFile = (file) => {
     if (!file) return;
 
-    // Optional: Limit size (example: 10GB)
-    if (file.size > 10 * 1024 * 1024 * 1024) {
+    /* Size validation */
+    if (file.size > MAX_FILE_SIZE) {
       setError("File too large. Max 10GB allowed.");
+      return;
+    }
+
+    if (!import.meta.env.VITE_SUPABASE_URL ||
+        !import.meta.env.VITE_SUPABASE_KEY) {
+      setError("Storage configuration missing");
       return;
     }
 
@@ -31,9 +70,10 @@ export default function FileUpload({ onSuccess }) {
     setProgress(0);
     setError("");
 
-    // Generate unique name in storage
-    const filePath = `${Date.now()}_${file.name}`;
+    /* Unique storage path */
+    const filePath = `${Date.now()}_${crypto.randomUUID()}_${file.name}`;
 
+    /* TUS UPLOAD */
     const upload = new tus.Upload(file, {
       endpoint: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/upload/resumable`,
 
@@ -45,13 +85,25 @@ export default function FileUpload({ onSuccess }) {
       metadata: {
         bucketName: "uploads",
         objectName: filePath,
-        contentType: file.type,
+        contentType: file.type || "application/octet-stream",
         cacheControl: "3600",
       },
 
-      chunkSize: 6 * 1024 * 1024, // 6MB chunks
+      chunkSize: CHUNK_SIZE,
 
-      retryDelays: [0, 3000, 5000, 10000],
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+
+      removeFingerprintOnSuccess: true,
+
+      /* Resume support */
+      fingerprint: (file) => {
+        return [
+          file.name,
+          file.type,
+          file.size,
+          file.lastModified,
+        ].join("-");
+      },
 
       onProgress: (bytesUploaded, bytesTotal) => {
         const percentage = Math.floor(
@@ -61,45 +113,72 @@ export default function FileUpload({ onSuccess }) {
         setProgress(percentage);
       },
 
+      /* SUCCESS */
       onSuccess: async () => {
-        setUploading(false);
+        try {
+          setUploading(false);
 
-        // Get public URL
-        const { data } = supabase
-          .storage
-          .from("uploads")
-          .getPublicUrl(filePath);
+          /* Public URL */
+          const { data, error: urlError } = supabase
+            .storage
+            .from("uploads")
+            .getPublicUrl(filePath);
 
-        const fileUrl = data.publicUrl;
-        // 3️⃣ 👉 PUT YOUR CODE HERE (Save in DB)
-        await axios.post("/files/create", {
-          name: file.name,
-          url: fileUrl,
-          size: file.size,
-        });
+          if (urlError) {
+            throw urlError;
+          }
 
-        console.log("Upload complete:", fileUrl);
+          const fileUrl = data.publicUrl;
 
-        // Send back to parent (optional)
-        if (onSuccess) {
-          onSuccess({
+          /* Save metadata */
+          await axios.post("/files/create", {
             name: file.name,
             url: fileUrl,
             size: file.size,
             path: filePath,
           });
+
+          console.log("✅ Upload complete:", fileUrl);
+
+          if (onSuccess) {
+            onSuccess({
+              name: file.name,
+              url: fileUrl,
+              size: file.size,
+              path: filePath,
+            });
+          }
+
+        } catch (err) {
+          console.error("Post-upload error:", err);
+          setError("Upload completed but final step failed.");
         }
       },
 
+      /* ERROR */
       onError: (err) => {
-        console.error("Upload error:", err);
+        console.error("❌ Upload error:", err);
 
         setUploading(false);
-        setError("Upload failed. Try again.");
+
+        if (err?.originalRequest?._xhr?.status === 401) {
+          setError("Storage authorization failed.");
+        } else {
+          setError("Upload failed. Check your connection.");
+        }
       },
     });
 
-    upload.start();
+    /* Resume old upload if exists */
+    upload.findPreviousUploads().then((previousUploads) => {
+      if (previousUploads.length) {
+        upload.resumeFromPreviousUpload(previousUploads[0]);
+      }
+
+      upload.start();
+    });
+
+    uploadRef.current = upload;
   };
 
   return (
@@ -122,6 +201,7 @@ export default function FileUpload({ onSuccess }) {
           <p className="text-sm text-gray-500 mt-1">
             Supports large files (5GB+)
           </p>
+
         </div>
       </label>
 
@@ -149,6 +229,7 @@ export default function FileUpload({ onSuccess }) {
             ></div>
 
           </div>
+
         </div>
       )}
 

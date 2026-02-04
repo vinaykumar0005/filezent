@@ -1,16 +1,43 @@
 import File from "../models/File.js";
 import { mergeChunks } from "../utils/chunkMerger.js";
 import { v4 as uuid } from "uuid";
-
 import { sendMail } from "../config/mail.js";
 
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
+/* =========================
+   PATH SETUP (IMPORTANT)
+========================= */
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Root folder for uploads
+const UPLOAD_ROOT = path.join(__dirname, "../uploads");
+
+const CHUNKS_DIR = path.join(UPLOAD_ROOT, "chunks");
+const FILES_DIR = path.join(UPLOAD_ROOT, "files");
+
+/* =========================
+   ENSURE DIRECTORIES
+========================= */
+
+const ensureDir = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
+
+ensureDir(UPLOAD_ROOT);
+ensureDir(CHUNKS_DIR);
+ensureDir(FILES_DIR);
 
 /* =========================
    UPLOAD CHUNK
 ========================= */
+
 export const uploadChunk = async (req, res) => {
   try {
     const {
@@ -20,49 +47,78 @@ export const uploadChunk = async (req, res) => {
       fileName,
     } = req.body;
 
-    if (!uploadId || !fileName) {
+    if (!uploadId || !fileName || chunkIndex === undefined) {
       return res.status(400).json({
         message: "Invalid upload data",
       });
     }
 
-    // Last chunk → merge
+    const chunkFolder = path.join(CHUNKS_DIR, uploadId);
+
+    ensureDir(chunkFolder);
+
+    /* =========================
+       SAVE CHUNK
+    ========================= */
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Chunk file missing",
+      });
+    }
+
+    const chunkPath = path.join(
+      chunkFolder,
+      `${chunkIndex}`
+    );
+
+    fs.writeFileSync(chunkPath, req.file.buffer);
+
+    /* =========================
+       LAST CHUNK → MERGE
+    ========================= */
+
     if (Number(chunkIndex) + 1 === Number(totalChunks)) {
 
-      const finalDir = path.join(
-        process.cwd(),
-        "src/uploads/files"
-      );
+      // Check all chunks exist
+      for (let i = 0; i < totalChunks; i++) {
+        const p = path.join(chunkFolder, `${i}`);
 
-      if (!fs.existsSync(finalDir)) {
-        fs.mkdirSync(finalDir, { recursive: true });
+        if (!fs.existsSync(p)) {
+          return res.status(400).json({
+            message: `Missing chunk ${i}`,
+          });
+        }
       }
 
-      const finalPath = mergeChunks(
+      // Merge
+      const finalPath = await mergeChunks(
         uploadId,
         Number(totalChunks),
-        finalDir,
+        FILES_DIR,
         fileName
       );
 
-      /* 🧹 Remove temp chunks */
-      const chunkDir = path.join(
-        process.cwd(),
-        "src/uploads/chunks",
-        uploadId
-      );
+      // Get final file size
+      const stats = fs.statSync(finalPath);
 
-      if (fs.existsSync(chunkDir)) {
-        fs.rmSync(chunkDir, {
-          recursive: true,
-          force: true,
-        });
-      }
+      /* =========================
+         CLEAN TEMP CHUNKS
+      ========================= */
+
+      fs.rmSync(chunkFolder, {
+        recursive: true,
+        force: true,
+      });
+
+      /* =========================
+         SAVE DB
+      ========================= */
 
       const file = await File.create({
         originalName: fileName,
         path: finalPath,
-        size: req.file?.size || 0,
+        size: stats.size,
         token: uuid(),
         expiresAt: new Date(
           Date.now() + 24 * 60 * 60 * 1000
@@ -91,6 +147,7 @@ export const uploadChunk = async (req, res) => {
 /* =========================
    DOWNLOAD FILE
 ========================= */
+
 export const downloadFile = async (req, res) => {
   try {
     const file = await File.findOne({
@@ -98,21 +155,15 @@ export const downloadFile = async (req, res) => {
     });
 
     if (!file) {
-      return res
-        .status(404)
-        .send("File not found");
+      return res.status(404).send("File not found");
     }
 
     if (file.expiresAt < Date.now()) {
-      return res
-        .status(410)
-        .send("Link expired");
+      return res.status(410).send("Link expired");
     }
 
     if (!fs.existsSync(file.path)) {
-      return res
-        .status(404)
-        .send("File removed");
+      return res.status(404).send("File removed");
     }
 
     res.download(
@@ -132,6 +183,7 @@ export const downloadFile = async (req, res) => {
 /* =========================
    SEND FILE LINK EMAIL
 ========================= */
+
 export const sendEmail = async (req, res) => {
   try {
     const { email, link } = req.body;
@@ -142,9 +194,7 @@ export const sendEmail = async (req, res) => {
       });
     }
 
-    const cleanEmail = email
-      .trim()
-      .toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
 
     await sendMail({
       to: cleanEmail,

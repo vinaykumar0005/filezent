@@ -1,38 +1,35 @@
 import multer from "multer";
-import fs from "fs";
-import path from "path";
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // ✅ READ FROM HEADERS, NOT BODY
-    const uploadId = req.headers.uploadid;
+/* =========================
+   MEMORY STORAGE (BEST)
+========================= */
 
-    if (!uploadId) {
-      return cb(new Error("uploadId missing"), null);
-    }
+const storage = multer.memoryStorage();
 
-    const chunkDir = path.join(
-      process.cwd(),
-      "src/uploads/chunks",
-      uploadId
-    );
+/* =========================
+   LIMITS & FILTER
+========================= */
 
-    if (!fs.existsSync(chunkDir)) {
-      fs.mkdirSync(chunkDir, { recursive: true });
-    }
+const upload = multer({
+  storage,
 
-    cb(null, chunkDir);
+  limits: {
+    fileSize: 1024 * 1024 * 1024 * 6, // 6GB per chunk/file
   },
 
-  filename: (req, file, cb) => {
-    const chunkIndex = req.headers.chunkindex;
+  fileFilter: (req, file, cb) => {
 
-    if (chunkIndex === undefined) {
-      return cb(new Error("chunkIndex missing"), null);
+    // Optional: block empty files
+    if (!file.originalname) {
+      return cb(new Error("Invalid file"), false);
     }
 
-    cb(null, `chunk-${chunkIndex}`);
+    cb(null, true);
   },
 });
 
-export const upload = multer({ storage });
+/* =========================
+   EXPORT
+========================= */
+
+export { upload };
