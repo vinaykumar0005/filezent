@@ -18,28 +18,33 @@ const allowedOrigins = [
 // CORS Middleware (ONLY HERE)
 app.use(
   cors({
-    origin: (origin, callback) => {
-
-      // Allow Postman / server requests
+    origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("CORS blocked: " + origin));
+        callback(new Error("CORS blocked"));
       }
     },
 
     credentials: true,
 
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 
+    // 🔥 IMPORTANT FIX
     allowedHeaders: [
       "Content-Type",
-      "Authorization"
-    ]
+      "Authorization",
+      "uploadid",
+      "chunkindex",
+      "x-requested-with",
+    ],
+
+    exposedHeaders: ["Content-Length"],
   })
 );
+
 
 
 // Handle Preflight
