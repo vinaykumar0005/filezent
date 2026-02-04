@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js";
 import fileRoutes from "./routes/file.routes.js";
 
 const app = express();
+app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
 
 
 // Allowed Frontend URLs
