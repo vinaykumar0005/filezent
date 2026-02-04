@@ -58,15 +58,25 @@ export default function Upload() {
               "/files/upload",
               form,
               {
-                signal: controller.signal,
-                timeout: REQUEST_TIMEOUT,
-
                 headers: {
                   uploadid: uploadId,
                   chunkindex: i,
+                  "Content-Type": "multipart/form-data",
+                },
+
+                timeout: 0, // 🔥 IMPORTANT (disable timeout)
+
+                onUploadProgress: (e) => {
+                  if (e.total) {
+                    const percent = Math.round(
+                      ((i + e.loaded / e.total) / totalChunks) * 100
+                    );
+                    setProgress(percent);
+                  }
                 },
               }
             );
+
 
             if (!res?.data) {
               throw new Error("Invalid server response");

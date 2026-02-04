@@ -1,90 +1,48 @@
 import fs from "fs";
 import path from "path";
-import { pipeline } from "stream/promises";
 
-/* =========================
-   SAFE FILE NAME
-========================= */
-
-const sanitizeFileName = (name) => {
-  return name
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .substring(0, 200);
-};
-
-/* =========================
-   MERGE CHUNKS
-========================= */
-
-export const mergeChunks = async (
+export const mergeChunks = (
   uploadId,
   totalChunks,
   finalDir,
-  originalFileName
+  fileName
 ) => {
-
   const chunkDir = path.join(
     process.cwd(),
     "src/uploads/chunks",
     uploadId
   );
 
-  /* Validate chunk dir */
   if (!fs.existsSync(chunkDir)) {
-    throw new Error("Chunk directory missing");
+    throw new Error("Chunk folder missing");
   }
 
-  /* Create final dir */
   if (!fs.existsSync(finalDir)) {
     fs.mkdirSync(finalDir, { recursive: true });
   }
 
-  /* Safe filename */
-  const safeName = sanitizeFileName(originalFileName);
-
   const finalPath = path.join(
     finalDir,
-    `${Date.now()}-${safeName}`
+    `${Date.now()}-${fileName}`
   );
 
-  /* Create write stream */
   const writeStream = fs.createWriteStream(finalPath);
 
-  try {
+  for (let i = 0; i < totalChunks; i++) {
+    const chunkPath = path.join(
+      chunkDir,
+      `chunk-${i}`
+    );
 
-    /* Merge sequentially */
-    for (let i = 0; i < totalChunks; i++) {
-
-      const chunkPath = path.join(
-        chunkDir,
-        `chunk-${i}`
-      );
-
-      if (!fs.existsSync(chunkPath)) {
-        throw new Error(`Missing chunk ${i}`);
-      }
-
-      const readStream = fs.createReadStream(chunkPath);
-
-      await pipeline(
-        readStream,
-        writeStream,
-        { end: false } // Don't close after each chunk
-      );
+    if (!fs.existsSync(chunkPath)) {
+      throw new Error(`Missing chunk ${i}`);
     }
 
-    /* Close stream */
-    writeStream.end();
-
-    return finalPath;
-
-  } catch (err) {
-
-    /* Cleanup broken file */
-    if (fs.existsSync(finalPath)) {
-      fs.unlinkSync(finalPath);
-    }
-
-    throw err;
+    const data = fs.readFileSync(chunkPath);
+    writeStream.write(data);
   }
+
+  writeStream.end();
+
+  return finalPath;
 };

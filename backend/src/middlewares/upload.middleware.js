@@ -1,35 +1,64 @@
 import multer from "multer";
+import fs from "fs";
+import path from "path";
 
-/* =========================
-   MEMORY STORAGE (BEST)
-========================= */
+/*
+  Production Multer Setup
+  - Safe folders
+  - Large files
+  - Proper validation
+*/
 
-const storage = multer.memoryStorage();
+const CHUNK_ROOT = path.join(
+  process.cwd(),
+  "src/uploads/chunks"
+);
 
-/* =========================
-   LIMITS & FILTER
-========================= */
+// Ensure base folder exists
+if (!fs.existsSync(CHUNK_ROOT)) {
+  fs.mkdirSync(CHUNK_ROOT, { recursive: true });
+}
 
-const upload = multer({
-  storage,
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadId = req.headers.uploadid;
 
-  limits: {
-    fileSize: 1024 * 1024 * 1024 * 6, // 6GB per chunk/file
-  },
-
-  fileFilter: (req, file, cb) => {
-
-    // Optional: block empty files
-    if (!file.originalname) {
-      return cb(new Error("Invalid file"), false);
+    if (!uploadId) {
+      return cb(new Error("uploadId missing"));
     }
 
-    cb(null, true);
+    const chunkDir = path.join(CHUNK_ROOT, uploadId);
+
+    if (!fs.existsSync(chunkDir)) {
+      fs.mkdirSync(chunkDir, { recursive: true });
+    }
+
+    cb(null, chunkDir);
+  },
+
+  filename: (req, file, cb) => {
+    const chunkIndex = req.headers.chunkindex;
+
+    if (chunkIndex === undefined) {
+      return cb(new Error("chunkIndex missing"));
+    }
+
+    cb(null, `chunk-${chunkIndex}`);
   },
 });
 
-/* =========================
-   EXPORT
-========================= */
+export const upload = multer({
+  storage,
 
-export { upload };
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB per chunk
+  },
+
+  fileFilter: (req, file, cb) => {
+    if (!file) {
+      cb(new Error("No file"));
+    } else {
+      cb(null, true);
+    }
+  },
+});
