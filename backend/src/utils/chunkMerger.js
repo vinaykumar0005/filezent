@@ -1,11 +1,15 @@
 import fs from "fs";
 import path from "path";
 
-export const mergeChunks = (
+/* ============================
+   STREAM MERGE (SAFE)
+============================ */
+
+export const mergeChunks = async (
   uploadId,
   totalChunks,
   finalDir,
-  fileName
+  originalFileName
 ) => {
   const chunkDir = path.join(
     process.cwd(),
@@ -14,7 +18,7 @@ export const mergeChunks = (
   );
 
   if (!fs.existsSync(chunkDir)) {
-    throw new Error("Chunk folder missing");
+    throw new Error("Chunk directory missing");
   }
 
   if (!fs.existsSync(finalDir)) {
@@ -23,7 +27,7 @@ export const mergeChunks = (
 
   const finalPath = path.join(
     finalDir,
-    `${Date.now()}-${fileName}`
+    `${Date.now()}-${originalFileName}`
   );
 
   const writeStream = fs.createWriteStream(finalPath);
@@ -38,8 +42,14 @@ export const mergeChunks = (
       throw new Error(`Missing chunk ${i}`);
     }
 
-    const data = fs.readFileSync(chunkPath);
-    writeStream.write(data);
+    await new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(chunkPath);
+
+      readStream.on("error", reject);
+      readStream.on("end", resolve);
+
+      readStream.pipe(writeStream, { end: false });
+    });
   }
 
   writeStream.end();

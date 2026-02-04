@@ -58,12 +58,6 @@ export default function Upload() {
               "/files/upload",
               form,
               {
-                headers: {
-                  uploadid: uploadId,
-                  chunkindex: i,
-                  "Content-Type": "multipart/form-data",
-                },
-
                 timeout: 0, // 🔥 IMPORTANT (disable timeout)
 
                 onUploadProgress: (e) => {

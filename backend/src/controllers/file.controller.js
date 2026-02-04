@@ -47,78 +47,56 @@ export const uploadChunk = async (req, res) => {
       fileName,
     } = req.body;
 
-    if (!uploadId || !fileName || chunkIndex === undefined) {
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No chunk received",
+      });
+    }
+
+    if (!uploadId || !fileName) {
       return res.status(400).json({
         message: "Invalid upload data",
       });
     }
 
-    const chunkFolder = path.join(CHUNKS_DIR, uploadId);
+    const isLast =
+      Number(chunkIndex) + 1 === Number(totalChunks);
 
-    ensureDir(chunkFolder);
+    if (isLast) {
+      const finalDir = path.join(
+        process.cwd(),
+        "src/uploads/files"
+      );
 
-    /* =========================
-       SAVE CHUNK
-    ========================= */
-
-    if (!req.file) {
-      return res.status(400).json({
-        message: "Chunk file missing",
-      });
-    }
-
-    const chunkPath = path.join(
-      chunkFolder,
-      `${chunkIndex}`
-    );
-
-    fs.writeFileSync(chunkPath, req.file.buffer);
-
-    /* =========================
-       LAST CHUNK → MERGE
-    ========================= */
-
-    if (Number(chunkIndex) + 1 === Number(totalChunks)) {
-
-      // Check all chunks exist
-      for (let i = 0; i < totalChunks; i++) {
-        const p = path.join(chunkFolder, `${i}`);
-
-        if (!fs.existsSync(p)) {
-          return res.status(400).json({
-            message: `Missing chunk ${i}`,
-          });
-        }
+      if (!fs.existsSync(finalDir)) {
+        fs.mkdirSync(finalDir, { recursive: true });
       }
 
-      // Merge
       const finalPath = await mergeChunks(
         uploadId,
         Number(totalChunks),
-        FILES_DIR,
+        finalDir,
         fileName
       );
 
-      // Get final file size
-      const stats = fs.statSync(finalPath);
+      // Cleanup
+      const chunkDir = path.join(
+        process.cwd(),
+        "src/uploads/chunks",
+        uploadId
+      );
 
-      /* =========================
-         CLEAN TEMP CHUNKS
-      ========================= */
-
-      fs.rmSync(chunkFolder, {
-        recursive: true,
-        force: true,
-      });
-
-      /* =========================
-         SAVE DB
-      ========================= */
+      if (fs.existsSync(chunkDir)) {
+        fs.rmSync(chunkDir, {
+          recursive: true,
+          force: true,
+        });
+      }
 
       const file = await File.create({
         originalName: fileName,
         path: finalPath,
-        size: stats.size,
+        size: fs.statSync(finalPath).size,
         token: uuid(),
         expiresAt: new Date(
           Date.now() + 24 * 60 * 60 * 1000
@@ -141,6 +119,7 @@ export const uploadChunk = async (req, res) => {
     });
   }
 };
+
 
 
 
