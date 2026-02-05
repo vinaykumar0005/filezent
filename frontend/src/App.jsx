@@ -55,6 +55,12 @@ export default function App() {
         {/* PRIVATE ROUTES */}
         <Route
           path="/dashboard"
+          element={<Dashboard />
+
+          } />
+
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <AppLayout>
