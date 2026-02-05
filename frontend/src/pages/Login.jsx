@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../api/axios";
 import Popup from "../components/Popup";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -10,6 +11,7 @@ export default function Login() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Handle input change
   const handleChange = (e) => {
@@ -31,9 +33,10 @@ export default function Login() {
       // Save auth data
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      navigate("/upload");
 
       // Redirect
-      window.location.href = "/dashboard";
+      // window.location.href = "/dashboard";
     } catch (err) {
       setError(
         "You entered wrong credentials. Please enter correct credentials.",err
