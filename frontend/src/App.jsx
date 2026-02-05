@@ -10,6 +10,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AuthLayout from "./layouts/AuthLayout";
 import AppLayout from "./layouts/AppLayout";
 import { isAuthenticated } from "./utils/auth";
+import Dashboard from "./pages/Dashboard";
+
 
 export default function App() {
   return (

@@ -3,6 +3,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import fileRoutes from "./routes/file.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
 app.set("trust proxy", 1); // ✅ REQUIRED for Render/Vercel
@@ -59,6 +60,9 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/files", fileRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.set("trust proxy", 1);
+
 
 
 // Health check

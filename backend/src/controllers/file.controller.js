@@ -3,9 +3,11 @@ import { mergeChunks } from "../utils/chunkMerger.js";
 import { v4 as uuid } from "uuid";
 import { sendMail } from "../config/mail.js";
 
+
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { logActivity } from "../utils/activityLogger.js";
 
 /* =========================
    PATH SETUP (IMPORTANT)
@@ -119,6 +121,8 @@ export const uploadChunk = async (req, res) => {
       });
     }
 
+
+
     /* =========================
        SAVE DB
     ========================= */
@@ -132,6 +136,13 @@ export const uploadChunk = async (req, res) => {
         Date.now() + 24 * 60 * 60 * 1000
       ),
     });
+    await logActivity({         //change for dash
+      userId: req.user?._id,
+      type: "UPLOAD",
+      fileName,
+      ip: req.ip,
+    });
+
 
     return res.json({
       success: true,
@@ -151,6 +162,7 @@ export const uploadChunk = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -176,6 +188,13 @@ export const downloadFile = async (req, res) => {
     if (!fs.existsSync(file.path)) {
       return res.status(404).send("File removed");
     }
+    await logActivity({           //change for dash
+      userId: file.userId,
+      type: "DOWNLOAD",
+      fileName: file.originalName,
+      ip: req.ip,
+    });
+
 
     res.download(
       file.path,
@@ -240,6 +259,14 @@ export const sendEmail = async (req, res) => {
     });
 
     res.json({ success: true });
+    await logActivity({         //change for dash
+      userId: req.user?._id,
+      type: "EMAIL",
+      fileName: "Shared File",
+      receiverEmail: cleanEmail,
+      ip: req.ip,
+    });
+
 
   } catch (err) {
     console.error("File Email Error:", err);
