@@ -20,6 +20,13 @@ export default function Header() {
             Upload
           </Link>
 
+          <Link
+            to="/dashboard"
+            className="hover:text-gray-300"
+          >
+            Dashboard
+          </Link>
+
           <button
             onClick={logout}
             className="bg-white text-black px-3 py-1 rounded hover:bg-gray-200"
