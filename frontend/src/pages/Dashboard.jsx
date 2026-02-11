@@ -47,7 +47,7 @@ export default function Dashboard() {
     ========================= */
     if (loading) {
         return (
-            <div className="min-h-screen justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
                 <div className="flex flex-col items-center gap-3">
                     <div className="spinner"></div>
                     <p className="text-gray-600 text-sm">Loading dashboard...</p>
@@ -62,7 +62,7 @@ export default function Dashboard() {
     if (error) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-                <div className="bg-white p-6 rounded-2xl shadow-lg text-center max-w-sm w-full">
+                <div className="bg-white p-6 rounded-2xl shadow-lg text-center w-full">
                     <p className="text-red-600 font-medium mb-3">{error}</p>
                     <p className="text-sm text-gray-500">Redirecting...</p>
                 </div>
