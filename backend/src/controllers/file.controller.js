@@ -8,7 +8,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { logActivity } from "../utils/activityLogger.js";
-import Activity from "../models/Activity.js";
 
 
 /* =========================
@@ -138,7 +137,7 @@ export const uploadChunk = async (req, res) => {
         Date.now() + 24 * 60 * 60 * 1000
       ),
     });
-    await Activity.create({         //change for dashboard
+    await logActivity({         //change for dashboard
       userId: req.user?._id,
       type: "UPLOAD",
       fileName,
@@ -190,8 +189,8 @@ export const downloadFile = async (req, res) => {
     if (!fs.existsSync(file.path)) {
       return res.status(404).send("File removed");
     }
-    await Activity.create({           //change for dash
-      userId: req.user._id,
+    await logActivity({           //change for dash
+      userId: file.userId,
       type: "DOWNLOAD",
       fileName: file.originalName,
       ip: req.ip,
@@ -262,8 +261,8 @@ export const sendEmail = async (req, res) => {
 
     res.json({ success: true });
 
-    await Activity.create({         //change for dash
-      userId: req.user._id,
+    await logActivity({         //change for dash
+      userId: req.user?._id,
       type: "EMAIL",
       fileName: "Shared File",
       receiverEmail: cleanEmail,
