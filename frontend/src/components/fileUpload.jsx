@@ -243,35 +243,3 @@ export default function FileUpload({ onSuccess }) {
     </div>
   );
 }
-
-//code before superbase setup
-// import axios from "../api/axios";
-
-// const CHUNK_SIZE = 5 * 1024 * 1024;
-
-// export default function FileUpload() {
-//   const uploadFile = async (file) => {
-//     const uploadId = crypto.randomUUID();
-//     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-
-//     for (let i = 0; i < totalChunks; i++) {
-//       const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-
-//       const form = new FormData();
-//       form.append("file", chunk);
-//       form.append("uploadId", uploadId);
-//       form.append("chunkIndex", i);
-//       form.append("totalChunks", totalChunks);
-//       form.append("fileName", file.name);
-
-//       await axios.post("/files/upload", form);
-//     }
-//   };
-
-//   return (
-//     <input
-//       type="file"
-//       onChange={(e) => uploadFile(e.target.files[0])}
-//     />
-//   );
-// }
