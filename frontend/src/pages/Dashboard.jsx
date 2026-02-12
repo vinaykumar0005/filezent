@@ -48,7 +48,7 @@ export default function Dashboard() {
  ========================= */
     if (loading) {
         return (
-            <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4">
+            <div className="w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4">
                 <div className="flex flex-col items-center gap-3">
                     <div className="spinner"></div>
                     <p className="text-gray-600 text-sm">Loading dashboard...</p>
@@ -75,7 +75,7 @@ export default function Dashboard() {
        MAIN UI
     ========================= */
     return (
-        <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4 py-6">
+        <div className="w-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4 py-6">
 
             {/* Back Button */}
             <div className="max-w-6xl mx-auto mb-4">
