@@ -75,10 +75,10 @@ export default function Dashboard() {
         <div className="w-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4 py-6">
 
             {/* Back Button */}
-            <div className="max-w-6xl mx-auto mb-4">
+            <div className="max-w-6xl flex items-center justify-center h-full mx-auto mb-4"> {/*adjustment of button */}
                 <button
                     onClick={() => navigate("/upload")}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow"
                 >
                     ← Back to Upload
                 </button>

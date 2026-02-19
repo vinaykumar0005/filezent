@@ -28,12 +28,12 @@ export default function Header() {
           </Link>
 
           {/* DarkModeToggle update */}
-          <Link
-            to="/DarkModeToggle"
+          <button
+            onClick={DarkModeToggle}
             className="hover:text-gray-300"
           >
             Darkmode
-          </Link>
+          </button>
 
           <button
             onClick={logout}
