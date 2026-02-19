@@ -1,18 +1,9 @@
 import axios from "axios";
 
-/*
-  Production Axios Instance
-  - Env based URL
-  - JWT support
-  - Timeout
-  - Central error handling
-  - Upload safe
-*/
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
 
-  timeout: 60000, // 60s (large uploads)
+  timeout: 60000, // 60s large uploads
 
   withCredentials: true,
 
@@ -21,10 +12,9 @@ const api = axios.create({
   },
 });
 
-/* ===========================
-   REQUEST INTERCEPTOR
-   Attach JWT Automatically
-=========================== */
+
+//  REQUEST INTERCEPTOR Attach JWT Automatically
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -38,17 +28,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* ===========================
-   RESPONSE INTERCEPTOR
-   Central Error Handler
-=========================== */
+
+//  RESPONSE INTERCEPTOR Central Error Handler
+
 api.interceptors.response.use(
   (response) => response,
 
   (error) => {
     // Network error
     if (!error.response) {
-      console.error("❌ Network Error:", error.message);
+      console.error(" Network Error:", error.message);
 
       return Promise.reject({
         message: "Server unreachable. Try again later.",
@@ -70,7 +59,7 @@ api.interceptors.response.use(
       }
     }
 
-    console.error("❌ API Error:", {
+    console.error(" API Error:", {
       status,
       message,
       url: error.config?.url,

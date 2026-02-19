@@ -2,15 +2,14 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 
-/* ============================
-   SAFE STORAGE
-============================ */
+  //  SAFE STORAGE
+
 
 const storage = multer.diskStorage({
 
   destination: (req, file, cb) => {
 
-    // Multer may not parse body yet → fallback to query
+    
     const uploadId =
       req.body?.uploadId ||
       req.query?.uploadId;
@@ -46,14 +45,14 @@ const storage = multer.diskStorage({
   },
 });
 
-/* ============================
-   EXPORT
-============================ */
+
+  //  EXPORT
+
 
 export const upload = multer({
   storage,
 
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20MB per chunk
+    fileSize: 20 * 1024 * 1024, 
   },
 });

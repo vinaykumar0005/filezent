@@ -2,9 +2,9 @@ import { useEffect } from "react";
 
 export default function Popup({ message, onClose, type = "info" }) {
 
-  /* ===============================
-     AUTO CLOSE (5s)
-  =============================== */
+
+    //  AUTO CLOSE 
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -14,9 +14,8 @@ export default function Popup({ message, onClose, type = "info" }) {
   }, [onClose]);
 
 
-  /* ===============================
-     DISABLE SCROLL
-  =============================== */
+    //  DISABLE SCROLL
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
@@ -26,9 +25,9 @@ export default function Popup({ message, onClose, type = "info" }) {
   }, []);
 
 
-  /* ===============================
-     ICON
-  =============================== */
+  
+    //  ICON
+
   const getIcon = () => {
 
     if (type === "success") {
@@ -61,7 +60,7 @@ export default function Popup({ message, onClose, type = "info" }) {
       );
     }
 
-    // Default (info)
+    // Default
     return (
       <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
         <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,9 +71,9 @@ export default function Popup({ message, onClose, type = "info" }) {
   };
 
 
-  /* ===============================
-     COLOR THEME
-  =============================== */
+
+    //  COLOR THEME
+
   const getColors = () => {
 
     if (type === "success") return "from-green-600 to-emerald-600";

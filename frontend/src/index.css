@@ -1,22 +1,16 @@
-/* =====================================
-   TAILWIND BASE
-===================================== */
+/*  TAILWIND BASE */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 
-/* =====================================
-   GOOGLE FONT
-===================================== */
+/* GOOGLE FONT */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 
-/* =====================================
-   RESET
-===================================== */
+/* RESET */
 
 * {
   margin: 0;
@@ -25,20 +19,16 @@
 }
 
 
-/* =====================================
-   GLOBAL BODY
-===================================== */
+/*GLOBAL BODY */
 
 body {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Modern soft gradient */
-  background: linear-gradient(
-    135deg,
-    #eff6ff,
-    #f5f3ff,
-    #fdf2f8
-  );
+  background: linear-gradient(135deg,
+      #eff6ff,
+      #f5f3ff,
+      #fdf2f8);
 
   color: #1f2933;
   min-height: 100vh;
@@ -48,18 +38,14 @@ body {
 }
 
 
-/* =====================================
-   CONTAINER
-===================================== */
+/* CONTAINER */
 
 .container-app {
   @apply max-w-6xl mx-auto px-4;
 }
 
 
-/* =====================================
-   GLASS CARD (BACKWARD COMPATIBLE)
-===================================== */
+/* GLASS CARD (BACKWARD COMPATIBLE)*/
 
 .glass {
   background: rgba(255, 255, 255, 0.75);
@@ -70,9 +56,7 @@ body {
 }
 
 
-/* =====================================
-   CARD (NEW)
-===================================== */
+/* CARD (NEW) */
 
 .card {
   background: rgba(255, 255, 255, 0.85);
@@ -88,9 +72,7 @@ body {
 }
 
 
-/* =====================================
-   INPUTS (BACKWARD COMPATIBLE)
-===================================== */
+/*  INPUTS (BACKWARD COMPATIBLE)*/
 
 .input {
   width: 100%;
@@ -123,18 +105,16 @@ body {
 }
 
 
-/* =====================================
+/*  
    BUTTONS (BACKWARD COMPATIBLE)
-===================================== */
+  */
 
 .btn {
   padding: 0.75rem 1.5rem;
 
-  background: linear-gradient(
-    to right,
-    #2563eb,
-    #9333ea
-  );
+  background: linear-gradient(to right,
+      #2563eb,
+      #9333ea);
 
   color: #ffffff;
   border: none;
@@ -169,9 +149,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    SECONDARY BUTTON
-===================================== */
+  */
 
 .btn-secondary {
   padding: 0.75rem 1.5rem;
@@ -194,16 +174,14 @@ body {
 }
 
 
-/* =====================================
-   GRADIENT TEXT
-===================================== */
+/*  
+GRADIENT TEXT
+*/
 
 .gradient-text {
-  background: linear-gradient(
-    to right,
-    #2563eb,
-    #9333ea
-  );
+  background: linear-gradient(to right,
+      #2563eb,
+      #9333ea);
 
   -webkit-background-clip: text;
   background-clip: text;
@@ -212,9 +190,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    BADGES
-===================================== */
+*/
 
 .badge {
   display: inline-flex;
@@ -249,9 +227,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    ANIMATIONS
-===================================== */
+*/
 
 @keyframes fadeIn {
   from {
@@ -278,6 +256,7 @@ body {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -312,9 +291,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    SCROLLBAR
-===================================== */
+*/
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -325,27 +304,23 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom,
-    #2563eb,
-    #9333ea
-  );
+  background: linear-gradient(to bottom,
+      #2563eb,
+      #9333ea);
 
   border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    to bottom,
-    #1d4ed8,
-    #7e22ce
-  );
+  background: linear-gradient(to bottom,
+      #1d4ed8,
+      #7e22ce);
 }
 
 
-/* =====================================
+/*  
    ACCESSIBILITY
-===================================== */
+*/
 
 *:focus-visible {
   outline: 2px solid #3b82f6;
@@ -353,9 +328,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    SPINNER
-===================================== */
+*/
 
 .spinner {
   width: 40px;
@@ -370,9 +345,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    TRANSITIONS
-===================================== */
+*/
 
 .transition-all {
   transition: all 0.3s ease;
@@ -390,9 +365,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    HOVER EFFECTS
-===================================== */
+*/
 
 .hover-lift:hover {
   transform: translateY(-4px);
@@ -407,9 +382,9 @@ body {
 }
 
 
-/* =====================================
+/*  
    MOBILE OPTIMIZATION
-===================================== */
+*/
 
 @media (max-width: 640px) {
 

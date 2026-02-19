@@ -10,9 +10,8 @@ import {
 
 const router = express.Router();
 
-/* =========================
-   RATE LIMIT
-========================= */
+
+//  RATE LIMIT
 
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -26,16 +25,16 @@ const emailLimiter = rateLimit({
   max: 50,
 });
 
-/* =========================
-   ROUTES
-========================= */
+
+//  ROUTES
+
 
 // Upload
 router.post(
   "/upload",
   uploadLimiter,
-  upload.single("file"), // FIRST
-  uploadChunk             // NO PRE-VALIDATION
+  upload.single("file"),
+  uploadChunk
 );
 
 // Download

@@ -27,13 +27,13 @@ export const sendMail = async ({ to, subject, html }) => {
       htmlContent: html,
     });
 
-    console.log("✅ Email sent to:", to);
+    console.log("Email sent to:", to);
 
     return result;
 
   } catch (err) {
     console.error(
-      "❌ Brevo Mail Error:",
+      "Brevo Mail Error:",
       err.response?.body || err.message
     );
     throw err;

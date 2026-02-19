@@ -1,13 +1,13 @@
 import rateLimit from "express-rate-limit";
 
 export const otpLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
 
   skip: (req) => {
-    // Allow preflight requests
+
     return req.method === "OPTIONS";
   },
 

@@ -11,7 +11,7 @@ const fileSchema = new mongoose.Schema(
     // Expiry timestamp
     expiresAt: {
       type: Date,
-      index: { expires: 0 }, // ⬅ TTL INDEX
+      index: { expires: 0 }, 
     },
   },
   { timestamps: true }

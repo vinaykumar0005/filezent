@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const TEMP_DIR = path.join("src/uploads/chunks");
-const TEMP_LIFETIME = 60 * 60 * 1000; // 1 hour
+const TEMP_LIFETIME = 60 * 60 * 1000; 
 
 export const startTempCleanup = () => {
   setInterval(() => {
@@ -22,7 +22,7 @@ export const startTempCleanup = () => {
         }
       });
     } catch (err) {
-      console.warn("⚠️ Temp cleanup skipped:", err.message);
+      console.warn("Temp cleanup skipped:", err.message);
     }
-  }, 30 * 60 * 1000); // every 30 minutes
+  }, 30 * 60 * 1000); 
 };

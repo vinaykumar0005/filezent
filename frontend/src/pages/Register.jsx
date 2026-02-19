@@ -15,9 +15,8 @@ export default function Register() {
   const [popup, setPopup] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /* ======================
-     SEND OTP
-  ====================== */
+    //  SEND OTP
+    
   const sendOtp = async () => {
     if (!form.name || !form.email || !form.password) {
       setPopup("Please fill all fields");
@@ -42,9 +41,8 @@ export default function Register() {
     }
   };
 
-  /* ======================
-     VERIFY & REGISTER
-  ====================== */
+  // VERIFY & REGISTER
+
   const verifyOtp = async () => {
     if (!otp) {
       setPopup("Please enter OTP");

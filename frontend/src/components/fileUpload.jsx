@@ -3,17 +3,9 @@ import * as tus from "tus-js-client";
 import { supabase } from "../config/supabase";
 import axios from "../api/axios";
 
-/*
-  Production FileUpload
-  - 5GB+ support
-  - Resumable
-  - Crash-safe
-  - Resume after refresh
-  - Network recovery
-*/
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10GB
-const CHUNK_SIZE = 6 * 1024 * 1024; // 6MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024;
+const CHUNK_SIZE = 6 * 1024 * 1024;
 
 export default function FileUpload({ onSuccess }) {
   const [progress, setProgress] = useState(0);
@@ -23,22 +15,21 @@ export default function FileUpload({ onSuccess }) {
 
   const uploadRef = useRef(null);
 
-  /* ===========================
-     ENV VALIDATION
-  =========================== */
+
+  //  ENV VALIDATION
+
   useEffect(() => {
     if (!import.meta.env.VITE_SUPABASE_URL) {
-      console.error("❌ Missing SUPABASE URL");
+      console.error(" Missing SUPABASE URL");
     }
 
     if (!import.meta.env.VITE_SUPABASE_KEY) {
-      console.error("❌ Missing SUPABASE KEY");
+      console.error(" Missing SUPABASE KEY");
     }
   }, []);
 
-  /* ===========================
-     CLEAN OLD UPLOADS
-  =========================== */
+
+  //  CLEAN OLD UPLOADS
   useEffect(() => {
     return () => {
       if (uploadRef.current) {
@@ -47,9 +38,9 @@ export default function FileUpload({ onSuccess }) {
     };
   }, []);
 
-  /* ===========================
-     FILE UPLOAD
-  =========================== */
+
+  //  FILE UPLOAD
+
   const uploadFile = (file) => {
     if (!file) return;
 
@@ -60,7 +51,7 @@ export default function FileUpload({ onSuccess }) {
     }
 
     if (!import.meta.env.VITE_SUPABASE_URL ||
-        !import.meta.env.VITE_SUPABASE_KEY) {
+      !import.meta.env.VITE_SUPABASE_KEY) {
       setError("Storage configuration missing");
       return;
     }
@@ -138,7 +129,7 @@ export default function FileUpload({ onSuccess }) {
             path: filePath,
           });
 
-          console.log("✅ Upload complete:", fileUrl);
+          console.log(" Upload complete:", fileUrl);
 
           if (onSuccess) {
             onSuccess({
@@ -157,7 +148,7 @@ export default function FileUpload({ onSuccess }) {
 
       /* ERROR */
       onError: (err) => {
-        console.error("❌ Upload error:", err);
+        console.error("Upload error:", err);
 
         setUploading(false);
 
@@ -212,7 +203,7 @@ export default function FileUpload({ onSuccess }) {
         </p>
       )}
 
-      {/* Progress Bar */}
+      {/* Progress Bar  */}
       {uploading && (
         <div className="mt-4">
 
@@ -233,7 +224,7 @@ export default function FileUpload({ onSuccess }) {
         </div>
       )}
 
-      {/* Error */}
+      { }
       {error && (
         <p className="mt-3 text-sm text-red-600 text-center">
           {error}

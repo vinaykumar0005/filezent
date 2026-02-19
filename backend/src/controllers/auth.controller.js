@@ -12,10 +12,7 @@ import {
   OTP_LOCK_TIME,
 } from "../config/security.js";
 
-
-/* =========================
-   REGISTER
-========================= */
+// REGISTER
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -46,9 +43,8 @@ export const register = async (req, res) => {
 
 
 
-/* =========================
-   SEND REGISTER OTP
-========================= */
+
+//  SEND REGISTER OTP
 export const sendRegisterOtp = async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
@@ -94,11 +90,8 @@ export const sendRegisterOtp = async (req, res) => {
   }
 };
 
+//  VERIFY REGISTER OTP
 
-
-/* =========================
-   VERIFY REGISTER OTP
-========================= */
 export const verifyRegisterOtp = async (req, res) => {
   try {
     const { email, otp, name, password } = req.body;
@@ -160,11 +153,8 @@ export const verifyRegisterOtp = async (req, res) => {
   }
 };
 
+//  LOGIN
 
-
-/* =========================
-   LOGIN
-========================= */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -197,11 +187,8 @@ export const login = async (req, res) => {
   }
 };
 
+//  FORGOT PASSWORD
 
-
-/* =========================
-   FORGOT PASSWORD
-========================= */
 export const forgotPassword = async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();
@@ -235,11 +222,8 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
+//  RESET PASSWORD
 
-
-/* =========================
-   RESET PASSWORD
-========================= */
 export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;

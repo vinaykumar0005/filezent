@@ -13,9 +13,8 @@ export default function ForgotPassword() {
   const [timer, setTimer] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  /* =========================
-     OTP TIMER
-  ========================= */
+  //  OTP TIMER
+
   useEffect(() => {
     if (timer <= 0) return;
 
@@ -26,9 +25,9 @@ export default function ForgotPassword() {
     return () => clearInterval(interval);
   }, [timer]);
 
-  /* =========================
-     SEND OTP
-  ========================= */
+
+  //  SEND OTP
+
   const sendOtp = async () => {
     if (!email) {
       setPopup("Please enter your email.");
@@ -47,16 +46,15 @@ export default function ForgotPassword() {
     } catch (err) {
       setPopup(
         err.response?.data?.message ||
-          "Unable to send OTP. Please try again."
+        "Unable to send OTP. Please try again."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  /* =========================
-     RESET PASSWORD
-  ========================= */
+
+  //  RESET PASSWORD
   const resetPassword = async () => {
     if (!otp || !newPassword) {
       setPopup(
@@ -82,7 +80,7 @@ export default function ForgotPassword() {
     } catch (err) {
       setPopup(
         err.response?.data?.message ||
-          "Invalid OTP or expired OTP."
+        "Invalid OTP or expired OTP."
       );
     } finally {
       setLoading(false);
@@ -118,12 +116,11 @@ export default function ForgotPassword() {
             <div
               key={num}
               className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition
-                ${
-                  step >= num
-                    ? num === 3
-                      ? "bg-green-600 text-white"
-                      : "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-500"
+                ${step >= num
+                  ? num === 3
+                    ? "bg-green-600 text-white"
+                    : "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-500"
                 }`}
             >
               {num === 3 ? "✓" : num}
@@ -135,7 +132,7 @@ export default function ForgotPassword() {
         {/* CARD */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30">
 
-          {/* STEP 1 — EMAIL */}
+          {/* EMAIL */}
           {step === 1 && (
             <div className="space-y-6 text-center">
 
@@ -177,7 +174,7 @@ export default function ForgotPassword() {
             </div>
           )}
 
-          {/* STEP 2 — OTP + PASSWORD */}
+          {/* OTP + PASSWORD */}
           {step === 2 && (
             <div className="space-y-6 text-center">
 
@@ -228,11 +225,10 @@ export default function ForgotPassword() {
               <button
                 disabled={timer > 0}
                 onClick={sendOtp}
-                className={`w-full text-sm transition ${
-                  timer > 0
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-blue-600 hover:text-purple-600"
-                }`}
+                className={`w-full text-sm transition ${timer > 0
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-blue-600 hover:text-purple-600"
+                  }`}
               >
                 {timer > 0
                   ? `Resend OTP in ${timer}s`
@@ -242,7 +238,7 @@ export default function ForgotPassword() {
             </div>
           )}
 
-          {/* STEP 3 — SUCCESS */}
+          {/* SUCCESS */}
           {step === 3 && (
             <div className="text-center py-8">
 

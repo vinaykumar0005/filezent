@@ -10,9 +10,8 @@ export default function Dashboard() {
 
     const navigate = useNavigate();
 
-    /* =========================
-       LOAD DASHBOARD DATA
-    ========================= */
+    //    LOAD DASHBOARD DATA
+
     useEffect(() => {
         loadDashboard();
     }, []);
@@ -32,7 +31,6 @@ export default function Dashboard() {
 
             setError("Session expired. Please login again.");
 
-            // Auto logout after 2s
             setTimeout(() => {
                 localStorage.clear();
                 navigate("/login");
@@ -43,9 +41,9 @@ export default function Dashboard() {
     };
 
 
-    /* =========================
-    LOADING STATE
- ========================= */
+
+    // LOADING STATE
+
     if (loading) {
         return (
             <div className="w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4">
@@ -57,9 +55,9 @@ export default function Dashboard() {
         );
     }
 
-    /* =========================
-   ERROR STATE
-========================= */
+
+    //    ERROR STATE
+
     if (error) {
         return (
             <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4">
@@ -71,9 +69,8 @@ export default function Dashboard() {
         );
     }
 
-    /* =========================
-       MAIN UI
-    ========================= */
+    //  MAIN UI
+
     return (
         <div className="w-full bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4 py-6">
 
@@ -122,7 +119,7 @@ export default function Dashboard() {
                     {/* EMPTY */}
                     {activities.length === 0 && (
                         <p className="text-gray-500 text-center py-8">
-                            No activity yet
+                            Under Progress
                         </p>
                     )}
 

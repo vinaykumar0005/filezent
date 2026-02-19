@@ -10,9 +10,8 @@ import { fileURLToPath } from "url";
 import { logActivity } from "../utils/activityLogger.js";
 
 
-/* =========================
-   PATH SETUP (IMPORTANT)
-========================= */
+
+  //  PATH SETUP 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,9 +22,8 @@ const UPLOAD_ROOT = path.join(__dirname, "../uploads");
 const CHUNKS_DIR = path.join(UPLOAD_ROOT, "chunks");
 const FILES_DIR = path.join(UPLOAD_ROOT, "files");
 
-/* =========================
-   ENSURE DIRECTORIES
-========================= */
+
+  //  ENSURE DIRECTORIES
 
 const ensureDir = (dir) => {
   if (!fs.existsSync(dir)) {
@@ -37,9 +35,9 @@ ensureDir(UPLOAD_ROOT);
 ensureDir(CHUNKS_DIR);
 ensureDir(FILES_DIR);
 
-/* =========================
-   UPLOAD CHUNK
-========================= */
+
+  //UPLOAD CHUNK
+
 
 export const uploadChunk = async (req, res) => {
   try {
@@ -51,9 +49,7 @@ export const uploadChunk = async (req, res) => {
       fileName,
     } = req.body;
 
-    /* =========================
-       VALIDATION
-    ========================= */
+      //  VALIDATION
 
     if (!req.file) {
       console.error("❌ Multer did not receive file");
@@ -74,9 +70,8 @@ export const uploadChunk = async (req, res) => {
       });
     }
 
-    /* =========================
-       LAST CHUNK → MERGE
-    ========================= */
+   
+      //  LAST CHUNK → MERGE
 
     const isLast =
       Number(chunkIndex) + 1 === Number(totalChunks);
@@ -85,9 +80,8 @@ export const uploadChunk = async (req, res) => {
       return res.json({ chunkReceived: true });
     }
 
-    /* =========================
-       MERGE
-    ========================= */
+
+      //  MERGE 
 
     const finalDir = path.join(
       process.cwd(),
@@ -105,9 +99,7 @@ export const uploadChunk = async (req, res) => {
       fileName
     );
 
-    /* =========================
-       CLEANUP
-    ========================= */
+      //  CLEANUP
 
     const chunkDir = path.join(
       process.cwd(),
@@ -122,11 +114,8 @@ export const uploadChunk = async (req, res) => {
       });
     }
 
+      //  SAVE DB
 
-
-    /* =========================
-       SAVE DB
-    ========================= */
 
     const file = await File.create({
       originalName: fileName,
@@ -156,7 +145,7 @@ export const uploadChunk = async (req, res) => {
 
   } catch (err) {
 
-    console.error("❌ Upload Error:", err);
+    console.error("Upload Error:", err);
 
     return res.status(500).json({
       message: "Upload failed",
@@ -165,12 +154,8 @@ export const uploadChunk = async (req, res) => {
 };
 
 
+  //  DOWNLOAD FILE
 
-
-
-/* =========================
-   DOWNLOAD FILE
-========================= */
 
 export const downloadFile = async (req, res) => {
   try {
@@ -211,9 +196,9 @@ export const downloadFile = async (req, res) => {
 
 
 
-/* =========================
-   SEND FILE LINK EMAIL
-========================= */
+
+  //  SEND FILE LINK EMAIL
+
 
 export const sendEmail = async (req, res) => {
   try {

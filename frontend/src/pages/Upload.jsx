@@ -4,7 +4,7 @@ import api from "../api/axios";
 
 const CHUNK_SIZE = 5 * 1024 * 1024;
 const MAX_RETRIES = 3;
-const REQUEST_TIMEOUT = 60_000; // 60s per chunk
+const REQUEST_TIMEOUT = 60_000; 
 
 export default function Upload() {
   const [progress, setProgress] = useState(0);
@@ -17,9 +17,9 @@ export default function Upload() {
 
   const abortRef = useRef(null);
 
-  /* ========================
-     FILE UPLOAD
-  ======================== */
+
+    //  FILE UPLOAD
+
   const uploadFile = async (file) => {
     if (!file) return;
 
@@ -125,9 +125,9 @@ export default function Upload() {
     }
   };
 
-  /* ========================
-     SEND EMAIL
-  ======================== */
+ 
+    //  SEND EMAIL
+ 
   const sendEmail = async () => {
     if (!receiverEmail) {
       alert("Enter receiver email");
@@ -154,9 +154,9 @@ export default function Upload() {
     }
   };
 
-  /* ========================
-     COPY LINK
-  ======================== */
+ 
+    //  COPY LINK
+
   const copyLink = () => {
     navigator.clipboard.writeText(downloadLink);
 

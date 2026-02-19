@@ -6,7 +6,7 @@ import fileRoutes from "./routes/file.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
-app.set("trust proxy", 1); // ✅ REQUIRED for Render/Vercel
+app.set("trust proxy", 1); // REQUIRED for Render/Vercel
 
 
 // Allowed Frontend URLs
@@ -17,7 +17,7 @@ const allowedOrigins = [
 ];
 
 
-// CORS Middleware (ONLY HERE)
+// CORS Middleware
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -34,7 +34,7 @@ app.use(
 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 
-    // 🔥 IMPORTANT FIX
+
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -47,17 +47,9 @@ app.use(
   })
 );
 
-
-
-// Handle Preflight
-// app.options(cors());
-
-
-// Body parser
 app.use(express.json());
 
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/api/dashboard", dashboardRoutes);

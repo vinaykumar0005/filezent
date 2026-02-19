@@ -16,7 +16,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* ================= PUBLIC ================= */}
+        {/* PUBLIC */}
 
         <Route
           path="/register"
@@ -53,9 +53,9 @@ export default function App() {
           }
         />
 
-        {/* ================= PRIVATE ================= */}
+        {/* PRIVATE */}
 
-        {/* Upload = MAIN PAGE */}
+        {/* Upload MAIN PAGE */}
         <Route
           path="/upload"
           element={
@@ -91,7 +91,7 @@ export default function App() {
           }
         />
 
-        {/* ================= DEFAULT ================= */}
+        {/* DEFAULT */}
 
         <Route
           path="*"
