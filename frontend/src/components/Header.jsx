@@ -27,14 +27,6 @@ export default function Header() {
             Dashboard
           </Link>
 
-          {/* DarkModeToggle update */}
-          <button
-            onClick={DarkModeToggle}
-            className="hover:text-gray-300"
-          >
-            Darkmode
-          </button>
-
           <button
             onClick={logout}
             className="bg-white text-black px-3 py-1 rounded hover:bg-gray-200"

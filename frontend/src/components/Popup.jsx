@@ -169,7 +169,7 @@ export default function Popup({ message, onClose, type = "info" }) {
 
 
         {/* Timer Bar */}
-        <div className="h-1 bg-gray-100 rounded-b-3xl overflow-hidden">
+        <div className="h-1 bg-gray-100 rounded-b-3xl m-2 overflow-hidden">
           <div
             className={`h-full bg-gradient-to-r ${getColors()} animate-shrink`}
           />
